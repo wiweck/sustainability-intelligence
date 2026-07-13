@@ -1,0 +1,74 @@
+name: Visual review
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - styles.css
+      - app.js
+      - favicon.svg
+      - .github/workflows/visual-review.yml
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 > /tmp/sustainability-intelligence.log 2>&1 &
+          for attempt in {1..20}; do
+            curl --silent --fail http://127.0.0.1:4173/ && exit 0
+            sleep 1
+          done
+          exit 1
+
+      - name: Capture desktop and mobile
+        run: |
+          mkdir -p visual-review
+          node <<'NODE'
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch();
+            const page = await browser.newPage({
+              viewport: { width: 1440, height: 1000 },
+              deviceScaleFactor: 1
+            });
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await page.screenshot({ path: 'visual-review/desktop.png', fullPage: true });
+
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.reload({ waitUntil: 'networkidle' });
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+            if (overflow) throw new Error('Mobile layout has horizontal overflow');
+            await page.screenshot({ path: 'visual-review/mobile.png', fullPage: true });
+
+            await page.locator('[data-access-open]').first().click();
+            await page.screenshot({ path: 'visual-review/mobile-access-dialog.png', fullPage: true });
+            await browser.close();
+          })();
+          NODE
+
+      - name: Upload visual review
+        uses: actions/upload-artifact@v4
+        with:
+          name: front-page-visual-review
+          path: visual-review
+          if-no-files-found: error
+          retention-days: 14

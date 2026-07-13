@@ -1,0 +1,113 @@
+name: Workspace visual review
+
+on:
+  pull_request:
+    paths:
+      - "workspace.html"
+      - "workspace.css"
+      - "workspace.js"
+      - ".github/workflows/workspace-visual-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Chromium
+        run: |
+          npm init -y
+          npm install playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 > /tmp/workspace-server.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --silent --fail http://127.0.0.1:4173/workspace.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/workspace-server.log
+          exit 1
+
+      - name: Capture and verify workspace
+        run: |
+          mkdir -p workspace-review
+          node <<'NODE'
+          const { chromium } = require("playwright");
+
+          (async () => {
+            const browser = await chromium.launch();
+
+            const desktop = await browser.newPage({
+              viewport: { width: 1440, height: 1000 },
+              deviceScaleFactor: 1
+            });
+            await desktop.goto("http://127.0.0.1:4173/workspace.html", { waitUntil: "networkidle" });
+            await desktop.locator(".feed-item").first().waitFor();
+            await desktop.screenshot({
+              path: "workspace-review/workspace-desktop.png",
+              fullPage: false
+            });
+
+            const mobile = await browser.newPage({
+              viewport: { width: 390, height: 844 },
+              deviceScaleFactor: 1
+            });
+            await mobile.goto("http://127.0.0.1:4173/workspace.html", { waitUntil: "networkidle" });
+            await mobile.locator(".feed-item").first().waitFor();
+
+            const overflow = await mobile.evaluate(() => ({
+              viewport: document.documentElement.clientWidth,
+              document: document.documentElement.scrollWidth,
+              body: document.body.scrollWidth
+            }));
+            if (overflow.document > overflow.viewport + 1 || overflow.body > overflow.viewport + 1) {
+              throw new Error("Mobile horizontal overflow detected: " + JSON.stringify(overflow));
+            }
+
+            await mobile.screenshot({
+              path: "workspace-review/workspace-mobile.png",
+              fullPage: false
+            });
+
+            await mobile.locator(".item-open").first().click();
+            await mobile.locator("#preview-panel.is-open").waitFor();
+            await mobile.screenshot({
+              path: "workspace-review/workspace-mobile-preview.png",
+              fullPage: false
+            });
+
+            await mobile.locator("#close-preview").click();
+            await mobile.locator('[data-action="save"]').first().click();
+            await mobile.locator('[data-action="track"]').first().click();
+            const savedCount = await mobile.locator("#saved-count").textContent();
+            const trackedCount = await mobile.locator("#tracked-count").textContent();
+            if (savedCount !== "1" || trackedCount !== "1") {
+              throw new Error("Workspace action state did not update");
+            }
+
+            await browser.close();
+          })();
+          NODE
+
+      - name: Upload visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-visual-review
+          path: workspace-review
+          if-no-files-found: warn

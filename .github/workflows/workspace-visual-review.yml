@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   screenshots:
@@ -103,6 +103,19 @@ jobs:
             await browser.close();
           })();
           NODE
+
+      - name: Publish review screenshots to the draft branch
+        if: success() && github.event_name == 'pull_request'
+        run: |
+          mkdir -p review-images
+          cp workspace-review/*.png review-images/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add review-images
+          if ! git diff --cached --quiet; then
+            git commit -m "Add workspace review screenshots"
+            git push origin "HEAD:${{ github.head_ref }}"
+          fi
 
       - name: Upload visual review
         if: always()

@@ -86,6 +86,26 @@ jobs:
 
             await mobile.locator(".item-open").first().click();
             await mobile.locator("#preview-panel.is-open").waitFor();
+            const previewMetrics = await mobile.evaluate(() => {
+              const panel = document.querySelector("#preview-panel");
+              const rect = panel.getBoundingClientRect();
+              const style = getComputedStyle(panel);
+              return {
+                innerWidth: window.innerWidth,
+                clientWidth: document.documentElement.clientWidth,
+                scrollX: window.scrollX,
+                bodyScrollWidth: document.body.scrollWidth,
+                rect: { left: rect.left, right: rect.right, width: rect.width },
+                style: {
+                  position: style.position,
+                  left: style.left,
+                  right: style.right,
+                  width: style.width,
+                  transform: style.transform
+                }
+              };
+            });
+            console.log("PREVIEW_METRICS:" + JSON.stringify(previewMetrics));
             await mobile.screenshot({
               path: "workspace-review/workspace-mobile-preview.png",
               fullPage: false

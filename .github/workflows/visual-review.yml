@@ -60,7 +60,7 @@ jobs:
             await page.screenshot({ path: 'visual-review/mobile.png', fullPage: true });
 
             await page.locator('.hero [data-access-open]').click();
-            await page.screenshot({ path: 'visual-review/mobile-access-dialog.png', fullPage: true });
+            await page.screenshot({ path: 'visual-review/mobile-access-dialog.png', fullPage: false });
             await browser.close();
           })();
           NODE

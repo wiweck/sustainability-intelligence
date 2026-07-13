@@ -59,13 +59,14 @@ jobs:
             if (overflow) throw new Error('Mobile layout has horizontal overflow');
             await page.screenshot({ path: 'visual-review/mobile.png', fullPage: true });
 
-            await page.locator('[data-access-open]').first().click();
+            await page.locator('.hero [data-access-open]').click();
             await page.screenshot({ path: 'visual-review/mobile-access-dialog.png', fullPage: true });
             await browser.close();
           })();
           NODE
 
       - name: Upload visual review
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: front-page-visual-review

@@ -807,7 +807,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .item-actions button { width: 34px; }
   .preview-panel {
     top: 28px;
-    width: 100%;
+    right: 0;
+    left: 0;
+    width: auto;
+    max-width: none;
     border-left: 0;
   }
   .preview-content { padding: 24px 20px 70px; }

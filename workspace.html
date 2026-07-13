@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F5F9E9">
+  <meta name="description" content="Illustrative Sustainability Intelligence workspace for reviewing direct opportunities and emerging signals.">
+  <title>Intelligence Workspace | Sustainability Intelligence</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="workspace.css">
+  <script src="workspace.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace-main">Skip to intelligence</a>
+
+  <div class="prototype-banner" role="status">
+    <strong>Illustrative workspace</strong>
+    <span>No live intelligence or personal data</span>
+  </div>
+
+  <header class="mobile-header">
+    <a class="brand" href="index.html" aria-label="Sustainability Intelligence home">
+      <span class="wordmark"><span>SUSTAINABILITY</span><span><span>I</span>NTELLIGENCE</span></span>
+    </a>
+    <button class="mobile-menu-button" type="button" aria-expanded="false" aria-controls="workspace-sidebar">
+      <span class="sr-only">Open workspace navigation</span>
+      <span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </header>
+
+  <div class="workspace-shell">
+    <aside id="workspace-sidebar" class="sidebar" aria-label="Workspace navigation">
+      <div class="sidebar-brand">
+        <a class="brand" href="index.html" aria-label="Sustainability Intelligence home">
+          <span class="wordmark"><span>SUSTAINABILITY</span><span><span>I</span>NTELLIGENCE</span></span>
+          <span class="tagline">From signals to opportunities</span>
+        </a>
+      </div>
+
+      <nav class="workspace-navigation" aria-label="Intelligence">
+        <p>Intelligence</p>
+        <button class="nav-item is-active" type="button" data-view="queue">
+          <span class="nav-symbol" aria-hidden="true">◎</span>
+          <span>Action Queue</span><span class="count" data-count="queue">6</span>
+        </button>
+        <button class="nav-item" type="button" data-view="direct">
+          <span class="nav-symbol" aria-hidden="true">↗</span>
+          <span>Direct Opportunities</span><span class="count" data-count="direct">3</span>
+        </button>
+        <button class="nav-item" type="button" data-view="signals">
+          <span class="nav-symbol" aria-hidden="true">◇</span>
+          <span>Emerging Signals</span><span class="count" data-count="signals">3</span>
+        </button>
+        <button class="nav-item" type="button" data-view="context">
+          <span class="nav-symbol" aria-hidden="true">▤</span>
+          <span>Context</span>
+        </button>
+      </nav>
+
+      <nav class="workspace-navigation secondary-navigation" aria-label="Workspace">
+        <p>Workspace</p>
+        <button class="nav-item" type="button" data-view="pipeline">
+          <span class="nav-symbol" aria-hidden="true">≡</span><span>Pipeline</span><span class="count" data-count="pipeline">0</span>
+        </button>
+        <button class="nav-item" type="button" data-view="sources">
+          <span class="nav-symbol" aria-hidden="true">□</span><span>Sources</span>
+        </button>
+        <button class="nav-item" type="button" data-view="settings">
+          <span class="nav-symbol" aria-hidden="true">⚙</span><span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="profile-mark" aria-hidden="true">WS</span>
+        <div><strong>Wiweck Singh</strong><span>Individual workspace</span></div>
+      </div>
+    </aside>
+
+    <main id="workspace-main" class="workspace-main">
+      <header class="workspace-topbar">
+        <div>
+          <p class="date-label">Intelligence workspace</p>
+          <p class="welcome">Good morning, Wiweck</p>
+        </div>
+        <div class="topbar-actions">
+          <label class="search-control">
+            <span class="sr-only">Search intelligence</span>
+            <span aria-hidden="true">⌕</span>
+            <input id="search-input" type="search" placeholder="Search intelligence">
+          </label>
+          <button class="icon-button" type="button" aria-label="Notifications">○</button>
+        </div>
+      </header>
+
+      <section class="workspace-content" aria-labelledby="view-title">
+        <div class="view-heading">
+          <div>
+            <p class="eyebrow" id="view-eyebrow">Prioritised intelligence</p>
+            <h1 id="view-title">Action Queue</h1>
+            <p id="view-description">The strongest next actions across both ranking tracks.</p>
+          </div>
+          <div class="view-summary" aria-label="Queue summary">
+            <div><strong id="visible-count">6</strong><span>Visible</span></div>
+            <div><strong id="saved-count">0</strong><span>Saved</span></div>
+            <div><strong id="tracked-count">0</strong><span>Tracking</span></div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="segmented-control" aria-label="Fit track">
+            <button class="is-active" type="button" data-fit="all">All</button>
+            <button type="button" data-fit="expert">Individual Expert Fit</button>
+            <button type="button" data-fit="nonprofit">Nonprofit Fit</button>
+          </div>
+          <div class="filter-actions">
+            <label>
+              <span class="sr-only">Filter by theme</span>
+              <select id="theme-filter">
+                <option value="all">All themes</option>
+                <option value="policy">Policy and regulation</option>
+                <option value="funding">Funding and finance</option>
+                <option value="markets">Markets and standards</option>
+                <option value="knowledge">Knowledge and programmes</option>
+              </select>
+            </label>
+            <label>
+              <span class="sr-only">Sort intelligence</span>
+              <select id="sort-select">
+                <option value="priority">Highest priority</option>
+                <option value="confidence">Highest confidence</option>
+                <option value="urgency">Most urgent</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="feed-header" aria-hidden="true">
+          <span>Intelligence</span><span>Fit and action</span><span>Timing</span><span></span>
+        </div>
+
+        <div id="intelligence-feed" class="intelligence-feed" aria-live="polite"></div>
+
+        <div id="empty-state" class="empty-state" hidden>
+          <span aria-hidden="true">○</span>
+          <h2>No illustrative records match these filters.</h2>
+          <p>Clear the search or change the fit and theme filters.</p>
+          <button class="text-button" type="button" id="clear-filters">Clear filters</button>
+        </div>
+      </section>
+    </main>
+
+    <aside id="preview-panel" class="preview-panel" aria-labelledby="preview-title">
+      <div class="preview-toolbar">
+        <span>Quick preview</span>
+        <button type="button" id="close-preview" aria-label="Close quick preview">×</button>
+      </div>
+      <div id="preview-content" class="preview-content">
+        <div class="preview-placeholder">
+          <span aria-hidden="true">◇</span>
+          <h2>Select an intelligence item</h2>
+          <p>Review why it matters, evidence status and a possible next step.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="Mobile workspace">
+    <button class="is-active" type="button" data-mobile-view="queue"><span aria-hidden="true">◎</span>Intelligence</button>
+    <button type="button" id="mobile-search"><span aria-hidden="true">⌕</span>Search</button>
+    <button type="button" data-mobile-view="pipeline"><span aria-hidden="true">≡</span>Pipeline</button>
+    <button type="button" id="mobile-more"><span aria-hidden="true">•••</span>More</button>
+  </nav>
+
+  <template id="feed-item-template">
+    <article class="feed-item">
+      <button class="item-open" type="button">
+        <span class="record-marker" aria-hidden="true"></span>
+        <span class="item-copy">
+          <span class="record-type"></span>
+          <strong class="record-title"></strong>
+          <span class="record-source"></span>
+          <span class="record-summary"></span>
+        </span>
+        <span class="item-fit">
+          <span class="fit-badge"></span>
+          <span class="recommended-action"></span>
+        </span>
+        <span class="item-timing">
+          <strong></strong><span></span>
+        </span>
+      </button>
+      <div class="item-actions" aria-label="Record actions">
+        <button type="button" data-action="save">Save</button>
+        <button type="button" data-action="track">Track</button>
+        <button type="button" data-action="dismiss">Dismiss</button>
+      </div>
+    </article>
+  </template>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

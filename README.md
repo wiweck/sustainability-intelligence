@@ -6,20 +6,30 @@ Sustainability Intelligence is an India-anchored, globally informed intelligence
 
 ## Current implementation
 
-This repository begins with the approved public front page and GitHub Pages deployment foundation.
+This repository contains the approved public front page, verified-email access interface and persistent private workspace foundation.
 
 - Light editorial visual identity
 - Fiery Terracotta, Ivory, Graphite, Crayola Blue and Dodger Blue
-- Wordmark with the initial “I” in “INTELLIGENCE” set in Fiery Terracotta
+- Wordmark with the initial "I" in "INTELLIGENCE" set in Fiery Terracotta
 - Approved front-page narrative
 - Separate Individual Expert Fit and Nonprofit Fit
+- Six-digit passwordless email verification through Supabase Auth
+- Per-user workspace state protected by Postgres Row Level Security
 - Responsive navigation and accessible interaction states
-- No protected intelligence, private keys or personal user data in public files
+- No private keys or SMTP credentials in browser or repository files
 
-## Review boundaries
+## Production activation
 
-The current front-page build is a visual and structural implementation. Verified-email access and persistent accounts must be connected through a secure free-tier service in a later controlled pull request.
+Production access remains safely disabled until the project owner creates the free Supabase and Resend services and adds the two safe GitHub deployment variables.
+
+Follow [the verified access setup guide](docs/verified-access-setup.md). Never place a Supabase secret key, service role key, SMTP password or Resend API key in this repository.
+
+## Review mode
+
+Use `access.html?review=1` to review the complete access interface without sending email or creating an account. Use the demonstration code `123456`.
+
+Use `workspace.html?review=1` to review the illustrative workspace without a production session. The records in the interface are format demonstrations, not live intelligence.
 
 ## Local dependencies
 
-None. The public page is plain HTML, CSS and JavaScript and is deployed through GitHub Pages.
+None for the deployed product. The interface is plain HTML, CSS and JavaScript and is deployed through GitHub Pages. GitHub Actions installs Playwright only inside the visual-review runner.

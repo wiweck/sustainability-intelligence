@@ -630,13 +630,6 @@
     document.querySelector("#profile-mark").textContent = initials || "SI";
   }
 
-  function openInitialPreview() {
-    if (window.matchMedia("(min-width: 1021px)").matches) {
-      const first = activeRecords()[0];
-      if (first) openPreview(first.id);
-    }
-  }
-
   async function initialiseWorkspace() {
     state.reviewMode = window.SIAuth.isReviewMode();
 
@@ -644,7 +637,6 @@
       document.querySelector("#profile-label").textContent = "Review workspace";
       document.querySelector("#profile-track").textContent = "No account or personal data";
       render();
-      openInitialPreview();
       return;
     }
 
@@ -672,7 +664,6 @@
 
     updateProfileInterface();
     render();
-    openInitialPreview();
   }
 
   document.querySelector("#sign-out-button").addEventListener("click", async () => {

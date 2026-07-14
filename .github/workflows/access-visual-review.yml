@@ -1,0 +1,94 @@
+name: Verified access visual review
+
+on:
+  pull_request:
+    paths:
+      - "access.html"
+      - "access.css"
+      - "access.js"
+      - "auth-client.js"
+      - "supabase-config.js"
+      - "workspace.html"
+      - "workspace.css"
+      - "workspace.js"
+      - "database/**"
+      - ".github/workflows/access-visual-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install screenshot browser
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Start static review server
+        run: |
+          python3 -m http.server 4173 > /tmp/si-access-server.log 2>&1 &
+          echo $! > /tmp/si-access-server.pid
+
+      - name: Capture access and workspace review
+        run: |
+          node <<'NODE'
+          const { chromium } = require("playwright");
+          const fs = require("fs");
+          const base = "http://127.0.0.1:4173";
+
+          async function assertNoOverflow(page, label) {
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+            if (overflow) throw new Error(label + " has horizontal overflow");
+          }
+
+          (async () => {
+            fs.mkdirSync("access-review", { recursive: true });
+            const browser = await chromium.launch();
+
+            const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+            await desktop.goto(base + "/access.html?review=1", { waitUntil: "networkidle" });
+            await assertNoOverflow(desktop, "Access desktop");
+            await desktop.screenshot({ path: "access-review/access-desktop.png", fullPage: true });
+
+            const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+            await mobile.goto(base + "/access.html?review=1", { waitUntil: "networkidle" });
+            await assertNoOverflow(mobile, "Access mobile");
+            await mobile.screenshot({ path: "access-review/access-mobile.png", fullPage: true });
+            await mobile.fill("#display-name", "Review User");
+            await mobile.fill("#email-address", "review@example.com");
+            await mobile.click('#details-form button[type="submit"]');
+            await mobile.waitForSelector("#verify-form:not([hidden])");
+            await assertNoOverflow(mobile, "Verification mobile");
+            await mobile.screenshot({ path: "access-review/verification-mobile.png", fullPage: true });
+
+            const workspace = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+            await workspace.goto(base + "/workspace.html?review=1", { waitUntil: "networkidle" });
+            await assertNoOverflow(workspace, "Workspace review");
+            await workspace.screenshot({ path: "access-review/workspace-desktop.png", fullPage: true });
+
+            await browser.close();
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload visual review
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-access-visual-review
+          path: access-review
+          if-no-files-found: error
+          retention-days: 14

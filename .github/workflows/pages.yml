@@ -1,4 +1,4 @@
-name: Deploy public front page to GitHub Pages
+name: Deploy Sustainability Intelligence to GitHub Pages
 
 on:
   push:
@@ -24,12 +24,37 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Build static deployment artifact
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          mkdir -p _site
+          rsync -a ./ _site/             --exclude .git             --exclude _site             --exclude node_modules             --exclude access-review             --exclude workspace-review             --exclude output             --exclude tmp
+          node <<'NODE'
+          const fs = require("fs");
+          const config = {
+            supabaseUrl: process.env.SUPABASE_URL || "",
+            supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || "",
+            environment: process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY
+              ? "production"
+              : "unconfigured"
+          };
+          fs.writeFileSync(
+            "_site/supabase-config.js",
+            "window.SUSTAINABILITY_CONFIG = Object.freeze(" + JSON.stringify(config, null, 2) + ");\n"
+          );
+          NODE
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

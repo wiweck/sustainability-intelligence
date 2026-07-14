@@ -56,7 +56,7 @@ jobs:
               viewport: { width: 1440, height: 1000 },
               deviceScaleFactor: 1
             });
-            await desktop.goto("http://127.0.0.1:4173/workspace.html", { waitUntil: "networkidle" });
+            await desktop.goto("http://127.0.0.1:4173/workspace.html?review=1", { waitUntil: "networkidle" });
             await desktop.locator(".feed-item").first().waitFor();
             await desktop.screenshot({
               path: "workspace-review/workspace-desktop.png",
@@ -67,7 +67,7 @@ jobs:
               viewport: { width: 390, height: 844 },
               deviceScaleFactor: 1
             });
-            await mobile.goto("http://127.0.0.1:4173/workspace.html", { waitUntil: "networkidle" });
+            await mobile.goto("http://127.0.0.1:4173/workspace.html?review=1", { waitUntil: "networkidle" });
             await mobile.locator(".feed-item").first().waitFor();
 
             const overflow = await mobile.evaluate(() => ({

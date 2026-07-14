@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F5F9E9">
+  <meta name="description" content="Passwordless verified-email access to the Sustainability Intelligence workspace.">
+  <title>Verified access | Sustainability Intelligence</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="access.css">
+  <script src="supabase-config.js" defer></script>
+  <script src="auth-client.js" defer></script>
+  <script src="access.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#access-main">Skip to access form</a>
+
+  <header class="access-header">
+    <a class="brand" href="index.html" aria-label="Sustainability Intelligence home">
+      <span class="wordmark"><span>SUSTAINABILITY</span><span><span>I</span>NTELLIGENCE</span></span>
+      <span class="tagline">From signals to opportunities</span>
+    </a>
+    <a class="back-link" href="index.html">Return to public page</a>
+  </header>
+
+  <main id="access-main" class="access-main">
+    <section class="access-intro" aria-labelledby="access-title">
+      <p class="eyebrow">Verified-email access</p>
+      <h1 id="access-title">One secure step to your intelligence workspace.</h1>
+      <p class="intro-copy">Enter your name and email. We will send a six-digit, time-limited verification code. No password is created or stored.</p>
+
+      <div class="access-principles" role="list" aria-label="Access principles">
+        <div role="listitem"><span>01</span><p><strong>Minimal information</strong>Name and verified email only</p></div>
+        <div role="listitem"><span>02</span><p><strong>Private workspace</strong>Your decisions remain linked to your account</p></div>
+        <div role="listitem"><span>03</span><p><strong>Purpose-limited use</strong>No marketing list or sale of personal information</p></div>
+      </div>
+
+      <p class="security-note">The public GitHub repository contains no private intelligence, personal information or secret authentication keys.</p>
+    </section>
+
+    <section class="access-card" aria-labelledby="card-title">
+      <div class="card-header">
+        <div>
+          <p class="card-index">Access checkpoint</p>
+          <h2 id="card-title">Verify your email</h2>
+        </div>
+        <span class="secure-marker"><span aria-hidden="true"></span>Secure session</span>
+      </div>
+
+      <ol class="step-indicator" aria-label="Verification progress">
+        <li class="is-active" data-step-indicator="details"><span>1</span>Details</li>
+        <li data-step-indicator="verify"><span>2</span>Verify</li>
+        <li data-step-indicator="complete"><span>3</span>Workspace</li>
+      </ol>
+
+      <div id="configuration-message" class="configuration-message" hidden>
+        <strong>Secure access is being configured.</strong>
+        <p>No information has been submitted or stored. Please return after the authentication service is connected.</p>
+      </div>
+
+      <div id="existing-session" class="existing-session" hidden>
+        <p class="form-kicker">Verified session found</p>
+        <h3>Continue to your workspace</h3>
+        <p>Your current secure session is still active on this device.</p>
+        <a class="primary-button" href="workspace.html">Open workspace</a>
+        <button class="quiet-button" id="existing-sign-out" type="button">Sign out instead</button>
+      </div>
+
+      <form id="details-form" class="access-form">
+        <p class="form-kicker">Step 1 of 2</p>
+        <label>
+          <span>Your name</span>
+          <input id="display-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="100" required placeholder="Enter your name">
+        </label>
+        <label>
+          <span>Email address</span>
+          <input id="email-address" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
+        </label>
+        <button class="primary-button" type="submit">Send verification code</button>
+        <p class="form-help">By continuing, you agree that your email may be used only to verify access, maintain your workspace and deliver essential account messages.</p>
+      </form>
+
+      <form id="verify-form" class="access-form" hidden>
+        <p class="form-kicker">Step 2 of 2</p>
+        <h3>Check your email</h3>
+        <p class="verify-copy">Enter the six-digit code sent to <strong id="verification-email"></strong>.</p>
+        <label>
+          <span>Verification code</span>
+          <input id="verification-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required placeholder="000000">
+        </label>
+        <button class="primary-button" type="submit">Verify and open workspace</button>
+        <div class="verify-actions">
+          <button class="quiet-button" id="change-email" type="button">Change details</button>
+          <button class="quiet-button" id="resend-code" type="button" disabled>Resend in 60 seconds</button>
+        </div>
+      </form>
+
+      <div id="access-status" class="access-status" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="access-footer">
+    <span>© 2026 Sustainability Intelligence</span>
+    <span>Free access <span aria-hidden="true">•</span> No password <span aria-hidden="true">•</span> Verified email</span>
+  </footer>
+</body>
+</html>

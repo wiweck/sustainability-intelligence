@@ -874,3 +874,37 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     --line-strong: rgba(55, 55, 55, 0.7);
   }
 }
+.account-controls {
+  max-width: 620px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 24px auto 0;
+}
+.account-request-button {
+  min-height: 40px;
+  flex: 1 1 190px;
+  padding: 9px 14px;
+  border: 1px solid var(--graphite);
+  background: transparent;
+  color: var(--graphite);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+}
+.account-request-button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.account-request-danger {
+  border-color: var(--terracotta);
+  color: #a4381d;
+}
+.account-request-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+#sign-out-button {
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+}

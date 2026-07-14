@@ -8,6 +8,8 @@
   <title>Intelligence Workspace | Sustainability Intelligence</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="workspace.css">
+  <script src="supabase-config.js" defer></script>
+  <script src="auth-client.js" defer></script>
   <script src="workspace.js" defer></script>
 </head>
 <body>
@@ -68,11 +70,14 @@
         <button class="nav-item" type="button" data-view="settings">
           <span class="nav-symbol" aria-hidden="true">⚙</span><span>Settings</span>
         </button>
+        <button class="nav-item" id="sign-out-button" type="button">
+          <span class="nav-symbol" aria-hidden="true">↪</span><span>Sign out</span>
+        </button>
       </nav>
 
       <div class="sidebar-footer">
-        <span class="profile-mark" aria-hidden="true">WS</span>
-        <div><strong>Wiweck Singh</strong><span>Individual workspace</span></div>
+        <span class="profile-mark" id="profile-mark" aria-hidden="true">SI</span>
+        <div><strong id="profile-label">Verified workspace</strong><span id="profile-track">Secure personal session</span></div>
       </div>
     </aside>
 
@@ -80,7 +85,7 @@
       <header class="workspace-topbar">
         <div>
           <p class="date-label">Intelligence workspace</p>
-          <p class="welcome">Good morning, Wiweck</p>
+          <p class="welcome">Good morning, <span id="profile-name">there</span></p>
         </div>
         <div class="topbar-actions">
           <label class="search-control">

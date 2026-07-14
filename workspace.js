@@ -163,6 +163,9 @@
   };
 
   const state = {
+    reviewMode: false,
+    session: null,
+    profile: null,
     view: "queue",
     fit: "all",
     theme: "all",
@@ -293,7 +296,7 @@
     const descriptions = {
       context: "Published intelligence will preserve this sequence so a user can challenge the evidence before accepting the interpretation.",
       sources: "Paid aggregators may reveal a lead, but the underlying public source must be located and verified wherever possible.",
-      settings: "These controls are a structural preview. This public prototype does not create an account, store personal information or send notifications."
+      settings: "Manage the verified session and submit a request for a copy or deletion of account information."
     };
 
     feed.replaceChildren();
@@ -324,6 +327,22 @@
       list.append(item);
     });
     article.append(marker, title, paragraph, list);
+    if (state.view === "settings") {
+      const controls = document.createElement("div");
+      controls.className = "account-controls";
+      const exportButton = document.createElement("button");
+      exportButton.className = "account-request-button";
+      exportButton.type = "button";
+      exportButton.textContent = "Request my data";
+      exportButton.addEventListener("click", () => submitAccountRequest("export", exportButton));
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "account-request-button account-request-danger";
+      deleteButton.type = "button";
+      deleteButton.textContent = "Request account deletion";
+      deleteButton.addEventListener("click", () => submitAccountRequest("delete", deleteButton));
+      controls.append(exportButton, deleteButton);
+      article.append(controls);
+    }
     feed.append(article);
     emptyState.hidden = true;
     updateCounts(0);
@@ -425,17 +444,35 @@
     document.querySelectorAll(".feed-item").forEach((item) => item.classList.remove("is-selected"));
   }
 
-  function handleAction(action, id) {
+  async function persistWorkspaceState(id) {
+    if (state.reviewMode) return;
+    try {
+      await window.SIAuth.saveWorkspaceState({
+        item_id: id,
+        saved: state.saved.has(id),
+        tracked: state.tracked.has(id),
+        dismissed: state.dismissed.has(id)
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        window.location.replace("access.html?notice=session");
+        return;
+      }
+      showToast("The workspace change could not be saved. Please try again.");
+    }
+  }
+
+  async function handleAction(action, id) {
     const record = records.find((item) => item.id === id);
     if (!record) return;
 
     if (action === "save") {
       if (state.saved.has(id)) {
         state.saved.delete(id);
-        showToast("Removed from saved records");
+        showToast(state.reviewMode ? "Removed from review selection" : "Removed from saved records");
       } else {
         state.saved.add(id);
-        showToast("Saved for this browser session");
+        showToast(state.reviewMode ? "Saved for interface review" : "Saved to your workspace");
       }
     }
 
@@ -445,18 +482,40 @@
         showToast("Tracking removed");
       } else {
         state.tracked.add(id);
-        showToast("Added to the illustrative pipeline");
+        showToast(state.reviewMode ? "Added to the review pipeline" : "Added to your pipeline");
       }
     }
 
     if (action === "dismiss") {
       state.dismissed.add(id);
-      showToast("Dismissed for this browser session");
+      showToast(state.reviewMode ? "Dismissed for interface review" : "Dismissed in your workspace");
       if (state.selected === id) closePreview();
     }
 
     render();
     if (state.selected === id && action !== "dismiss") openPreview(id);
+    await persistWorkspaceState(id);
+  }
+
+  async function submitAccountRequest(type, button) {
+    if (state.reviewMode) {
+      showToast("Review mode does not create account requests");
+      return;
+    }
+    if (type === "delete" && !window.confirm("Submit a request to delete this account and its workspace information?")) return;
+    button.disabled = true;
+    try {
+      await window.SIAuth.createAccountRequest(type);
+      showToast(type === "export" ? "Data request submitted" : "Account deletion request submitted");
+    } catch (error) {
+      if (error.status === 401) {
+        window.location.replace("access.html?notice=session");
+        return;
+      }
+      showToast("The account request could not be submitted. Please try again.");
+    } finally {
+      button.disabled = false;
+    }
   }
 
   function changeView(view) {
@@ -549,10 +608,87 @@
     }
   });
 
-  render();
+  function updateProfileInterface() {
+    const fallbackName = state.session && state.session.user && state.session.user.user_metadata
+      ? state.session.user.user_metadata.display_name
+      : "";
+    const displayName = state.profile && state.profile.display_name
+      ? state.profile.display_name
+      : fallbackName || "there";
+    const fitTrack = state.profile && state.profile.fit_track ? state.profile.fit_track : "both";
+    const firstName = displayName.split(/\s+/)[0] || "there";
+    const initials = displayName === "there"
+      ? "SI"
+      : displayName.split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("");
 
-  if (window.matchMedia("(min-width: 1021px)").matches) {
-    const first = activeRecords()[0];
-    if (first) openPreview(first.id);
+    document.querySelector("#profile-name").textContent = firstName;
+    document.querySelector("#profile-label").textContent = displayName === "there" ? "Verified workspace" : displayName;
+    document.querySelector("#profile-track").textContent =
+      fitTrack === "expert" ? "Individual Expert Fit" :
+      fitTrack === "nonprofit" ? "Nonprofit Fit" :
+      "Both fit tracks";
+    document.querySelector("#profile-mark").textContent = initials || "SI";
   }
+
+  function openInitialPreview() {
+    if (window.matchMedia("(min-width: 1021px)").matches) {
+      const first = activeRecords()[0];
+      if (first) openPreview(first.id);
+    }
+  }
+
+  async function initialiseWorkspace() {
+    state.reviewMode = window.SIAuth.isReviewMode();
+
+    if (state.reviewMode) {
+      document.querySelector("#profile-label").textContent = "Review workspace";
+      document.querySelector("#profile-track").textContent = "No account or personal data";
+      render();
+      openInitialPreview();
+      return;
+    }
+
+    if (!window.SIAuth.isConfigured()) {
+      window.location.replace("access.html?notice=configuration");
+      return;
+    }
+
+    state.session = await window.SIAuth.getSession();
+    if (!state.session) {
+      window.location.replace("access.html?notice=session");
+      return;
+    }
+
+    const results = await Promise.all([
+      window.SIAuth.getProfile(),
+      window.SIAuth.getWorkspaceStates()
+    ]);
+    state.profile = results[0];
+    results[1].forEach((item) => {
+      if (item.saved) state.saved.add(item.item_id);
+      if (item.tracked) state.tracked.add(item.item_id);
+      if (item.dismissed) state.dismissed.add(item.item_id);
+    });
+
+    updateProfileInterface();
+    render();
+    openInitialPreview();
+  }
+
+  document.querySelector("#sign-out-button").addEventListener("click", async () => {
+    if (state.reviewMode) {
+      window.location.href = "access.html?review=1";
+      return;
+    }
+    await window.SIAuth.signOut();
+    window.location.replace("access.html");
+  });
+
+  initialiseWorkspace().catch((error) => {
+    if (error.status === 401) {
+      window.location.replace("access.html?notice=session");
+      return;
+    }
+    showToast(error.message || "The private workspace could not be opened.");
+  });
 })();

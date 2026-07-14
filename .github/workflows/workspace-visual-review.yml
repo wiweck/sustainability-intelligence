@@ -105,16 +105,6 @@ jobs:
           })();
           NODE
 
-      - name: Encode review screenshots
-        run: |
-          for file in workspace-review/*.png; do
-            name=$(basename "$file")
-            echo "SCREENSHOT_BEGIN:$name"
-            base64 -w 0 "$file"
-            echo
-            echo "SCREENSHOT_END:$name"
-          done
-
       - name: Upload visual review
         if: always()
         uses: actions/upload-artifact@v4
